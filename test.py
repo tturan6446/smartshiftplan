@@ -97,6 +97,7 @@ if st.button('Giriş Yap') or st.session_state['login_successful']:
                 
                 # Excel dosyası olarak sonuçları indir
                 excel_data = sonuclari_excel_olarak_indir(personel_programi)
+                st.dataframe(personel_programi)
                 st.download_button(label="Atama Sonuçlarını Excel olarak indir",
                                    data=excel_data,
                                    file_name="vardiya_planı.xlsx",
