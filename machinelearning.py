@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import boto3
+import streamlit as st
+from io import BytesIO  # Excel dosyasını bellekte tutmak için
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
@@ -9,8 +10,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, A
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import PolynomialFeatures, LabelEncoder
 from sklearn.pipeline import make_pipeline
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 # Dosya yolunu tam olarak belirtin
@@ -132,19 +132,9 @@ pivot_df = pd.pivot_table(df, values=['Random Forest'], index='Day', columns='TI
 # İşlenmiş veriyi yeni bir Excel dosyasına kaydetme
 pivot_df.to_excel('7_gunluk_vardiya_plani.xlsx')
 
-## AWS YÜKLEMESİ OLMAZSA BURAYI SİL ###
-
-# AWS S3'e yükleme yapmak için boto3 kütüphanesi ile S3 client oluştur
-s3_client = boto3.client('s3')
-
-# Yüklenecek dosyanın yolu ve S3 bucket bilgileri
-dosya_yolu = '7_gunluk_vardiya_plani.xlsx'
-bucket_ismi = 'testssp'
-s3_dosya_ismi = '7_gunluk_vardiya_plani.xlsx'  # S3'teki dosyanın adı
-
-# Dosyayı S3'e yükle
-try:
-    s3_client.upload_file(dosya_yolu, bucket_ismi, s3_dosya_ismi)
-    print(f"'{dosya_yolu}' dosyası '{bucket_ismi}' bucket'ına başarıyla yüklendi.")
-except Exception as e:
-    print(f"Dosya yükleme sırasında bir hata oluştu: {e}") 
+# Pivot tabloyu hafızada tutulacak bir Excel dosyasına kaydetme
+output = BytesIO()
+with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    pivot_df.to_excel(writer, sheet_name='Vardiya Planı')
+    writer.save()
+pivot_excel_data = output.getvalue()
